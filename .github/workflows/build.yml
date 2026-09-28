@@ -16,6 +16,6 @@ jobs:
       - run: ./gradlew build
       - uses: actions/upload-artifact@v4
         with:
-          name: RiftDLC-0.1.0
-          path: build/libs/riftdlc-0.1.0.jar
+          name: RiftDLC-0.2.0-alpha
+          path: build/libs/riftdlc-0.2.0-alpha.jar
           if-no-files-found: error
