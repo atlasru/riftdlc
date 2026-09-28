@@ -1,4 +1,4 @@
-package dev.riftdlc.protocol;
+package dev.riftdlc.mixin;
 
 import dev.riftdlc.RiftDLC;
 import net.minecraft.client.Minecraft;

@@ -10,6 +10,7 @@ public abstract class RiftModule {
     private final Category category;
     private final List<Setting<?>> settings = new ArrayList<>();
     private volatile boolean enabled;
+    private int bind = -1;
 
     protected RiftModule(String id, String name, String description, Category category) {
         this.id = Objects.requireNonNull(id);
@@ -28,6 +29,8 @@ public abstract class RiftModule {
         return setting;
     }
     public final boolean enabled() { return enabled; }
+    public final int bind() { return bind; }
+    public final void bind(int key) { bind = key; }
     public final void setEnabled(boolean next) {
         if (enabled == next) return;
         if (next) {

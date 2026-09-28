@@ -1,7 +1,7 @@
 {
   "required": true,
-  "package": "dev.riftdlc",
+  "package": "dev.riftdlc.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": ["protocol.ConnectScreenMixin", "modules.ConnectionMixin"],
+  "client": ["ConnectScreenMixin", "ConnectionMixin", "KeyboardMixin"],
   "injectors": {"defaultRequire": 1}
 }

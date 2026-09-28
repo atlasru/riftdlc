@@ -3,6 +3,10 @@ package dev.riftdlc;
 import dev.riftdlc.automation.AutomationScheduler;
 import dev.riftdlc.config.ConfigStore;
 import dev.riftdlc.core.ModuleRegistry;
+import dev.riftdlc.core.FriendManager;
+import dev.riftdlc.input.KeybindManager;
+import dev.riftdlc.command.RiftCommands;
+import dev.riftdlc.modules.ActionModules;
 import dev.riftdlc.core.RiftModule;
 import dev.riftdlc.core.Setting;
 import dev.riftdlc.dupe.DupeRegistry;
@@ -106,5 +110,86 @@ class FoundationTest {
         assertTrue(log.snapshot().getFirst().endsWith("Packet100"));
         log.setEnabled(false);
         assertFalse(Files.exists(directory.resolve("packets.log")));
+    }
+    @Test void bindsPersistAndMalformedBindIsIgnored() throws Exception {
+        Path path = directory.resolve("riftdlc/config.json");
+        ModuleRegistry registry = new ModuleRegistry();
+        Example example = new Example(); registry.register(example);
+        example.bind(65);
+        new ConfigStore(path).save(registry);
+        Example restored = new Example();
+        ModuleRegistry copy = new ModuleRegistry(); copy.register(restored);
+        new ConfigStore(path).load(copy);
+        assertEquals(65, restored.bind());
+        Files.writeString(path, Files.readString(path).replace("\"bind\": 65", "\"bind\": \"bad\""));
+        restored.bind(-1);
+        new ConfigStore(path).load(copy);
+        assertEquals(-1, restored.bind());
+    }
+    @Test void friendNamesAreCaseInsensitiveAndPersist() throws Exception {
+        Path path = directory.resolve("friends.json");
+        FriendManager friends = new FriendManager(path);
+        assertTrue(friends.add("Alex_42"));
+        assertFalse(friends.add("aLeX_42"));
+        assertThrows(IllegalArgumentException.class, () -> friends.add("bad name"));
+        friends.save();
+        FriendManager copy = new FriendManager(path); copy.load();
+        assertTrue(copy.contains("ALEX_42"));
+        assertTrue(copy.remove("alex_42"));
+    }
+    @Test void corruptedFriendFileDoesNotEraseCurrentNames() throws Exception {
+        Path path = directory.resolve("friends.json");
+        FriendManager friends = new FriendManager(path);
+        friends.add("Player123");
+        Files.writeString(path, "{bad");
+        friends.load();
+        assertTrue(friends.contains("player123"));
+    }
+    @Test void onlyPressEdgesToggleKeys() {
+        KeybindManager keys = new KeybindManager(null);
+        int insert = com.mojang.blaze3d.platform.InputConstants.KEY_INSERT;
+        int shift = com.mojang.blaze3d.platform.InputConstants.KEY_RSHIFT;
+        assertEquals(KeybindManager.GuiAction.OPEN, keys.guiAction(insert, 1, true, false));
+        assertEquals(KeybindManager.GuiAction.OPEN, keys.guiAction(shift, 1, true, false));
+        assertEquals(KeybindManager.GuiAction.CLOSE, keys.guiAction(insert, 1, false, true));
+        assertEquals(KeybindManager.GuiAction.NONE, keys.guiAction(shift, 2, true, false));
+        assertEquals(KeybindManager.GuiAction.NONE, keys.guiAction(insert, 1, false, false));
+    }
+    @Test void commandPrefixDoesNotCaptureOrdinaryChat() {
+        assertTrue(RiftCommands.isCommand(".rift gui"));
+        assertTrue(RiftCommands.isCommand(".RIFT"));
+        assertFalse(RiftCommands.isCommand(".rifted"));
+        assertFalse(RiftCommands.isCommand("hello .rift"));
+    }
+    @Test void actionsHaveConcreteModuleIdentity() {
+        for (var action : ActionModules.Action.values()) {
+            var module = new ActionModules(action);
+            assertEquals(action.name().toLowerCase(), module.id());
+            assertFalse(module.description().isBlank());
+            assertFalse(module.enabled());
+        }
+    }
+    @Test void mixinPackageDoesNotContainEntrypoint() throws Exception {
+        try (var stream = getClass().getClassLoader().getResourceAsStream("riftdlc.mixins.json")) {
+            assertNotNull(stream);
+            var root = com.google.gson.JsonParser.parseString(new String(stream.readAllBytes())).getAsJsonObject();
+            assertEquals("dev.riftdlc.mixin", root.get("package").getAsString());
+            assertTrue(root.getAsJsonArray("client").toString().contains("KeyboardMixin"));
+        }
+    }
+    @Test void guiKeysAndModuleBindsSurviveConfigRoundTrip() throws Exception {
+        Path file = directory.resolve("riftdlc/config.json");
+        ModuleRegistry modules = new ModuleRegistry();
+        Example module = new Example(); modules.register(module); module.bind(71);
+        KeybindManager keys = new KeybindManager(null); keys.setGuiKeys(73, 229);
+        new ConfigStore(file).save(modules, keys);
+        ModuleRegistry restored = new ModuleRegistry();
+        Example copy = new Example(); restored.register(copy);
+        KeybindManager restoredKeys = new KeybindManager(null);
+        restoredKeys.setGuiKeys(0, 0);
+        new ConfigStore(file).load(restored, restoredKeys);
+        assertEquals(71, copy.bind());
+        assertEquals(73, restoredKeys.insert());
+        assertEquals(229, restoredKeys.secondary());
     }
 }
