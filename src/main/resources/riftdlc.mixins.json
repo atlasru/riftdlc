@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.riftdlc.protocol",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["ConnectScreenMixin"],
+  "injectors": {"defaultRequire": 1}
+}
