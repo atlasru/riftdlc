@@ -7,6 +7,7 @@ import dev.riftdlc.core.RiftModule;
 import dev.riftdlc.core.Setting;
 import dev.riftdlc.dupe.DupeRegistry;
 import dev.riftdlc.protocol.ProtocolProfiles;
+import dev.riftdlc.modules.PacketLogger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -94,5 +95,16 @@ class FoundationTest {
         };
         registry.register(method);
         assertThrows(IllegalArgumentException.class, () -> registry.register(method));
+    }
+    @Test void packetLoggerBoundsMemoryAndIsDisabledByDefault() {
+        PacketLogger log = new PacketLogger(directory.resolve("packets.log"));
+        log.record(true, "BeforeEnable");
+        assertTrue(log.snapshot().isEmpty());
+        log.setEnabled(true);
+        for (int i = 0; i < 600; i++) log.record(i % 2 == 0, "Packet" + i);
+        assertEquals(500, log.snapshot().size());
+        assertTrue(log.snapshot().getFirst().endsWith("Packet100"));
+        log.setEnabled(false);
+        assertFalse(Files.exists(directory.resolve("packets.log")));
     }
 }

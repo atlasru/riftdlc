@@ -9,7 +9,7 @@ public abstract class RiftModule {
     private final String id, name, description;
     private final Category category;
     private final List<Setting<?>> settings = new ArrayList<>();
-    private boolean enabled;
+    private volatile boolean enabled;
 
     protected RiftModule(String id, String name, String description, Category category) {
         this.id = Objects.requireNonNull(id);

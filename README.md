@@ -8,7 +8,7 @@ Install Minecraft 26.3, Fabric Loader 0.19.5 or newer, Fabric API compatible wit
 
 The draggable GUI has module categories, toggles, an optional protocol selector, and a Dupe page. Protocol selection changes the target of the **next connection**. Disconnect before changing the global choice. While connected, NEXT JOIN stores a choice for that server; reconnect for it to take effect. Default inherits the global choice. Auto is ViaFabricPlus auto detection (release servers 1.7+); older server protocols require explicit selection. This does not replace the running game code.
 
-Shipped modules: **Auto Sprint**, **Anti AFK**, and **HUD**. Movement and AFK modules are disabled by default. HUD starts with a small watermark; FPS, ping, coordinates, protocol and enabled modules can be toggled independently. Configuration lives in .minecraft/config/riftdlc/ and is written atomically. The Dupe page contains **no working methods**. No exploit is claimed.
+Shipped modules: **Auto Sprint**, **Anti AFK**, **Packet Logger**, and **HUD**. Movement, AFK and packet logging modules are disabled by default. HUD starts with a small watermark; FPS, ping, coordinates, protocol and enabled modules can be toggled independently. Packet Logger records only packet class names, keeps at most 500 entries by default, and can optionally write rotated files (5 MB limit per file). Its exact-name filter can be edited in config.json. Configuration lives in .minecraft/config/riftdlc/ and is written atomically. The Dupe page contains **no working methods**. No exploit is claimed.
 
 ## Build
 
@@ -16,6 +16,6 @@ Run ./gradlew build on Java 25 (Windows: gradlew.bat build). The client JAR is i
 
 ## Scope and limitations
 
-The first build has a simple GUI. Packet logging, richer modules and a complete dupe execution flow are not implemented yet. Per-server profile application uses a focused ConnectScreen injection and needs live gameplay verification. No native injection, launcher, telemetry or account collection is included.
+The first build has a simple GUI. Richer modules and a complete dupe execution flow are not implemented yet. Per-server profile application uses a focused ConnectScreen injection and needs live gameplay verification. No native injection, launcher, telemetry or account collection is included.
 
 GPL-3.0-or-later. See [THIRD_PARTY.md](THIRD_PARTY.md).

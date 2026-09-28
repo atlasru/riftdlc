@@ -97,7 +97,7 @@ public final class RiftScreen extends Screen {
     private static void cycle(Setting<?> setting) {
         Object value = setting.get();
         if (value instanceof Boolean v) ((Setting<Boolean>) setting).set(!v);
-        else if (value instanceof Integer v) ((Setting<Integer>) setting).set(v >= 300 ? 10 : v + 10);
+        else if (value instanceof Integer v && !((Setting<Integer>) setting).set(v + 10)) setting.reset();
         else if (value instanceof Enum<?> v) {
             Object[] values = v.getDeclaringClass().getEnumConstants();
             ((Setting) setting).set(values[(v.ordinal() + 1) % values.length]);

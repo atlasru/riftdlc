@@ -7,6 +7,7 @@ import dev.riftdlc.dupe.DupeRegistry;
 import dev.riftdlc.modules.AntiAFK;
 import dev.riftdlc.modules.AutoSprint;
 import dev.riftdlc.modules.HudModule;
+import dev.riftdlc.modules.PacketLogger;
 import dev.riftdlc.protocol.ProtocolManager;
 import dev.riftdlc.protocol.ProtocolProfiles;
 import dev.riftdlc.ui.RiftScreen;
@@ -32,6 +33,7 @@ public final class RiftDLC implements ClientModInitializer {
     private final ProtocolManager protocols = new ProtocolManager();
     private final DupeRegistry dupes = new DupeRegistry();
     private final AutomationScheduler automation = new AutomationScheduler();
+    private PacketLogger packetLogger;
     private ConfigStore config;
     private ProtocolProfiles profiles;
     private long tick;
@@ -40,6 +42,7 @@ public final class RiftDLC implements ClientModInitializer {
     public ProtocolManager protocols() { return protocols; }
     public DupeRegistry dupes() { return dupes; }
     public ProtocolProfiles profiles() { return profiles; }
+    public PacketLogger packetLogger() { return packetLogger; }
     public void save() {
         try { config.save(modules); profiles.save(); }
         catch (IOException e) { LOG.warning("Could not save RiftDLC configuration: " + e.getMessage()); }
@@ -50,8 +53,10 @@ public final class RiftDLC implements ClientModInitializer {
         Path root = FabricLoader.getInstance().getConfigDir().resolve("riftdlc");
         config = new ConfigStore(root.resolve("config.json"));
         profiles = new ProtocolProfiles(root.resolve("servers/protocols.json"));
+        packetLogger = new PacketLogger(root.resolve("packets.log"));
         modules.register(new AutoSprint());
         modules.register(new AntiAFK());
+        modules.register(packetLogger);
         HudModule hud = new HudModule(this);
         modules.register(hud);
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("riftdlc", "hud"), (graphics, delta) -> hud.render(graphics));
@@ -64,6 +69,9 @@ public final class RiftDLC implements ClientModInitializer {
             modules.tick();
             automation.tick(++tick);
         });
-        Runtime.getRuntime().addShutdownHook(new Thread(this::save, "RiftDLC config shutdown"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            save();
+            packetLogger.closeOnShutdown();
+        }, "RiftDLC config shutdown"));
     }
 }
