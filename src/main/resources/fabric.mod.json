@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "riftdlc",
+  "version": "${version}",
+  "name": "RiftDLC",
+  "description": "Anarchy-focused client utility mod",
+  "authors": ["atlasru"],
+  "contact": {"sources": "https://github.com/atlasru/riftdlc"},
+  "license": "GPL-3.0-or-later",
+  "environment": "client",
+  "entrypoints": {"client": ["dev.riftdlc.RiftDLC"]},
+  "mixins": [{"config": "riftdlc.mixins.json", "environment": "client"}],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "suggests": {"viafabricplus": ">=5.1.1"}
+}
